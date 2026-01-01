@@ -9,6 +9,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { ChartsPage } from "./pages/ChartsPage";
 import { PRsPage } from "./pages/PRsPage";
+import { DiagnosticPage } from "./pages/DiagnosticPage";
 import { saveWorkoutToSupabase, deleteWorkoutFromSupabase } from "./services/supabaseService";
 import type { WorkoutEntry } from "./types";
 
@@ -95,6 +96,7 @@ export function App() {
             />
           }
         />
+        <Route path="/diagnostic" element={<DiagnosticPage />} />
       </Routes>
       </Layout>
     </>
