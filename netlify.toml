@@ -1,0 +1,18 @@
+# Netlify configuration for Workout Tracker
+
+[build]
+  # Build command for Vite/React app
+  command = "npm run build"
+
+  # Output directory where Vite builds to
+  publish = "dist"
+
+# SPA redirect rules - redirect all routes to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Optional: Set Node version
+[build.environment]
+  NODE_VERSION = "18"
