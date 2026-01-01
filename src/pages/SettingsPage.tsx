@@ -1,12 +1,16 @@
 import { useState } from "react";
 import type { Exercise } from "../types";
+import { isSupabaseConfigured } from "../supabaseClient";
 
 interface Props {
   exercises: Exercise[];
   setExercises: (next: Exercise[]) => void;
+  onManualSync?: () => Promise<void>;
+  syncing?: boolean;
+  lastSync?: Date | null;
 }
 
-export function SettingsPage({ exercises, setExercises }: Props) {
+export function SettingsPage({ exercises, setExercises, onManualSync, syncing, lastSync }: Props) {
   const [jsonText, setJsonText] = useState(JSON.stringify(exercises, null, 2));
   const [error, setError] = useState<string | null>(null);
 
@@ -71,6 +75,36 @@ export function SettingsPage({ exercises, setExercises }: Props) {
 
   return (
     <div className="stack">
+      {isSupabaseConfigured() && (
+        <section className="card">
+          <h2 className="card-title">Cloud Sync</h2>
+          <p className="muted">
+            Your workouts are automatically synced to the cloud. You can also manually sync now.
+          </p>
+          <div className="sync-info">
+            {lastSync ? (
+              <p className="sync-status-text">
+                <span className="sync-icon">☁</span>
+                Last synced: {lastSync.toLocaleString()}
+              </p>
+            ) : (
+              <p className="sync-status-text">
+                <span className="sync-icon">☁</span>
+                Not yet synced
+              </p>
+            )}
+          </div>
+          <button
+            className="primary-btn"
+            onClick={onManualSync}
+            disabled={syncing}
+            type="button"
+          >
+            {syncing ? "Syncing..." : "Sync Now"}
+          </button>
+        </section>
+      )}
+
       <section className="card">
         <h2 className="card-title">Exercise library</h2>
         <p className="muted">

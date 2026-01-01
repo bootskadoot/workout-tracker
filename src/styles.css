@@ -58,6 +58,71 @@ body {
   font-weight: 600;
 }
 
+.sync-status {
+  display: flex;
+  align-items: center;
+}
+
+.sync-indicator {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.sync-indicator.syncing {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.sync-indicator.synced {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.sync-indicator.offline {
+  background: rgba(156, 163, 175, 0.15);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  color: #9ca3af;
+}
+
+.sync-spinner {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid rgba(96, 165, 250, 0.3);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sync-info {
+  margin: 1rem 0;
+}
+
+.sync-status-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #d1d5db;
+}
+
+.sync-icon {
+  font-size: 1.25rem;
+}
+
 .app-nav {
   display: flex;
   gap: 0.5rem;
@@ -608,6 +673,39 @@ textarea {
   margin: 0 0 1rem;
   font-size: 1.05rem;
   font-weight: 600;
+}
+
+.migration-modal {
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.modal-text {
+  margin: 0.75rem 0;
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-text.success {
+  color: #4ade80;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.modal-text.error {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.migration-result {
+  margin: 1rem 0;
 }
 
 .workout-select-list {
