@@ -137,6 +137,13 @@ body {
   box-shadow:
     0 18px 45px rgba(15, 23, 42, 0.9),
     inset 0 0 0 1px rgba(15, 23, 42, 0.9);
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 0.95rem 0.85rem;
+  }
 }
 
 .card-title {
@@ -177,6 +184,9 @@ body {
   flex-direction: column;
   gap: 0.25rem;
   font-size: 0.8rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .field span {
@@ -211,6 +221,8 @@ textarea {
   display: flex;
   gap: 0.25rem;
   align-items: stretch;
+  width: 100%;
+  max-width: 100%;
 }
 
 .increment-buttons {
@@ -221,7 +233,7 @@ textarea {
 .increment-btn {
   font: inherit;
   font-size: 0.75rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(148, 163, 184, 0.4);
   background: rgba(15, 23, 42, 0.9);
@@ -230,6 +242,7 @@ textarea {
   min-height: 2.1rem;
   min-width: 2.5rem;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .increment-btn:active {
@@ -241,6 +254,7 @@ textarea {
   flex: 1;
   text-align: center;
   font-weight: 600;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
@@ -278,14 +292,20 @@ textarea {
   }
 
   .increment-btn {
-    min-width: 2.5rem;
+    min-width: 2.2rem;
+    max-width: 2.2rem;
     min-height: 2.5rem;
-    font-size: 0.75rem;
-    padding: 0.3rem 0.4rem;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.2rem;
   }
 
   .weight-input-group {
     width: 100%;
+    gap: 0.2rem;
+  }
+
+  .increment-buttons {
+    gap: 0.2rem;
   }
 }
 
