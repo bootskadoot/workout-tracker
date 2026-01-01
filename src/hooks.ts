@@ -97,7 +97,8 @@ export function useWorkoutHistory(userId: string) {
     setWorkouts,
     syncing,
     lastSync,
-    syncToSupabase
+    syncToSupabase,
+    setLastSync
   };
 }
 

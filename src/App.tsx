@@ -15,7 +15,7 @@ import type { WorkoutEntry } from "./types";
 export function App() {
   const { currentUser, setCurrentUser } = useUser();
   const { exercises, setExercises } = useExerciseLibrary();
-  const { workouts, setWorkouts, syncing, lastSync, syncToSupabase } = useWorkoutHistory(currentUser?.id || "user1");
+  const { workouts, setWorkouts, syncing, lastSync, syncToSupabase, setLastSync } = useWorkoutHistory(currentUser?.id || "user1");
 
   const handleDeleteWorkout = async (id: string) => {
     // Update local state immediately
@@ -23,7 +23,10 @@ export function App() {
 
     // Try to delete from Supabase (best effort)
     if (currentUser) {
-      await deleteWorkoutFromSupabase(currentUser.id, id);
+      const success = await deleteWorkoutFromSupabase(currentUser.id, id);
+      if (success) {
+        setLastSync(new Date());
+      }
     }
   };
 
@@ -33,7 +36,11 @@ export function App() {
 
     // Try to save to Supabase (best effort)
     if (currentUser) {
-      await saveWorkoutToSupabase(currentUser.id, entry);
+      const success = await saveWorkoutToSupabase(currentUser.id, entry);
+      if (success) {
+        // Update sync indicator to show it just synced
+        setLastSync(new Date());
+      }
     }
   };
 
