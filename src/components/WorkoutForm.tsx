@@ -42,6 +42,8 @@ function WeightInput({
       </div>
       <input
         type="number"
+        inputMode="decimal"
+        pattern="[0-9]*"
         min={0}
         step={0.5}
         value={value}
@@ -224,6 +226,8 @@ export function WorkoutForm({ exercises, workouts, onAddWorkout }: Props) {
             <span>Sets</span>
             <input
               type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={1}
               value={sets}
               onChange={(e) => setSets(Number(e.target.value) || 0)}
@@ -234,6 +238,8 @@ export function WorkoutForm({ exercises, workouts, onAddWorkout }: Props) {
               <span>Reps (per set)</span>
               <input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min={1}
                 value={reps}
                 onChange={(e) => setReps(e.target.value === "" ? "" : Number(e.target.value))}
