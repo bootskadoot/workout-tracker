@@ -1,5 +1,7 @@
+import { useState } from "react";
 import type { Exercise, WorkoutEntry } from "../types";
 import { isNewPR } from "../utils/personalRecords";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 interface Props {
   exercises: Exercise[];
@@ -8,6 +10,7 @@ interface Props {
 }
 
 export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) {
+  const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
   const sorted = [...workouts].sort((a, b) => (a.date < b.date ? 1 : -1));
 
   // Helper to check if an exercise in a workout is a PR
@@ -58,7 +61,7 @@ export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) 
                     <button
                       type="button"
                       className="ghost-btn history-delete-btn"
-                      onClick={() => onDeleteWorkout(w.id)}
+                      onClick={() => setWorkoutToDelete(w.id)}
                     >
                       Delete
                     </button>
@@ -91,6 +94,19 @@ export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) 
           );
         })}
       </ul>
+      {workoutToDelete && onDeleteWorkout && (
+        <ConfirmDialog
+          title="Delete Workout"
+          message="Are you sure you want to delete this workout? This action cannot be undone."
+          confirmText="Yes"
+          cancelText="No"
+          onConfirm={() => {
+            onDeleteWorkout(workoutToDelete);
+            setWorkoutToDelete(null);
+          }}
+          onCancel={() => setWorkoutToDelete(null)}
+        />
+      )}
     </section>
   );
 }
