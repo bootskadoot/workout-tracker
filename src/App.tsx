@@ -45,6 +45,19 @@ export function App() {
     }
   };
 
+  const handleEditWorkout = async (updated: WorkoutEntry) => {
+    // Update local state immediately
+    setWorkouts(workouts.map((w) => (w.id === updated.id ? updated : w)));
+
+    // Try to save to Supabase (best effort)
+    if (currentUser) {
+      const success = await saveWorkoutToSupabase(currentUser.id, updated);
+      if (success) {
+        setLastSync(new Date());
+      }
+    }
+  };
+
   // Show profile selection if no user is logged in
   if (!currentUser) {
     return <ProfileSelection onSelectUser={setCurrentUser} />;
@@ -63,6 +76,7 @@ export function App() {
               workouts={workouts}
               onAddWorkout={handleAddWorkout}
               onDeleteWorkout={handleDeleteWorkout}
+              onEditWorkout={handleEditWorkout}
             />
           }
         />
@@ -73,6 +87,7 @@ export function App() {
               exercises={exercises}
               workouts={workouts}
               onDeleteWorkout={handleDeleteWorkout}
+              onEditWorkout={handleEditWorkout}
             />
           }
         />

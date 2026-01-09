@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Exercise } from "../types";
 import { isSupabaseConfigured } from "../supabaseClient";
+import { slugifyExerciseName, getDefaultExercises } from "../localStorage";
 
 interface Props {
   exercises: Exercise[];
@@ -52,13 +53,14 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
     e.preventDefault();
     if (!newName.trim()) return;
 
-    const slug = (name: string) =>
-      name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+    const id = slugifyExerciseName(newName.trim());
 
-    const id = `${slug(newName)}-${Date.now().toString(36)}`;
+    // Check if exercise with this ID already exists
+    if (exercises.some((ex) => ex.id === id)) {
+      alert("An exercise with this name already exists.");
+      return;
+    }
+
     const newExercise: Exercise = {
       id,
       name: newName.trim(),
@@ -70,6 +72,26 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
     setNewName("");
     setNewCategory("Custom");
     setNewUnit("weight_reps");
+  }
+
+  function handleRestoreDefaults() {
+    if (confirm("This will add all default exercises. Existing exercises with the same name will be updated. Continue?")) {
+      const defaults = getDefaultExercises();
+      const merged = [...exercises];
+
+      for (const def of defaults) {
+        const existingIndex = merged.findIndex((ex) => ex.id === def.id);
+        if (existingIndex >= 0) {
+          // Update existing
+          merged[existingIndex] = def;
+        } else {
+          // Add new
+          merged.push(def);
+        }
+      }
+
+      setExercises(merged);
+    }
   }
 
   function handleStartEdit(exercise: Exercise) {
@@ -108,19 +130,13 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
         throw new Error("JSON must be an array");
       }
 
-      const slug = (name: string) =>
-        name
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
-
-      const mapped: Exercise[] = parsed.map((e, idx) => {
+      const mapped: Exercise[] = parsed.map((e) => {
         if (e && e.name && e.muscle) {
           return {
-            id: e.id || `${slug(e.name)}-${idx}`,
+            id: slugifyExerciseName(e.name),
             name: e.name,
             category: e.muscle,
-            unit: "weight_reps"
+            unit: "weight_reps" as const
           };
         }
         if (e && e.id && e.name && e.unit) {
@@ -219,9 +235,14 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
               </select>
             </label>
           </div>
-          <button className="primary-btn" type="submit" disabled={!newName.trim()}>
-            Add Exercise
-          </button>
+          <div className="button-row">
+            <button className="primary-btn" type="submit" disabled={!newName.trim()}>
+              Add Exercise
+            </button>
+            <button className="secondary-btn" type="button" onClick={handleRestoreDefaults}>
+              Restore Default Exercises
+            </button>
+          </div>
         </form>
       </section>
 

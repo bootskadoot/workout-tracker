@@ -9,13 +9,16 @@ import type { DateRange } from "../utils/filters";
 interface Props {
   exercises: Exercise[];
   workouts: WorkoutEntry[];
+  onDeleteWorkout: (id: string) => void;
+  onEditWorkout: (updated: WorkoutEntry) => void;
 }
 
 export function HistoryPage({
   exercises,
   workouts,
-  onDeleteWorkout
-}: Props & { onDeleteWorkout: (id: string) => void }) {
+  onDeleteWorkout,
+  onEditWorkout
+}: Props) {
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
 
@@ -44,6 +47,7 @@ export function HistoryPage({
         exercises={exercises}
         workouts={filteredWorkouts}
         onDeleteWorkout={onDeleteWorkout}
+        onEditWorkout={onEditWorkout}
       />
     </div>
   );

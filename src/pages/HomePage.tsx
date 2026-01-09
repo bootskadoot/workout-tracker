@@ -6,14 +6,17 @@ interface Props {
   exercises: Exercise[];
   workouts: WorkoutEntry[];
   onAddWorkout: (entry: WorkoutEntry) => void;
+  onDeleteWorkout: (id: string) => void;
+  onEditWorkout: (updated: WorkoutEntry) => void;
 }
 
 export function HomePage({
   exercises,
   workouts,
   onAddWorkout,
-  onDeleteWorkout
-}: Props & { onDeleteWorkout: (id: string) => void }) {
+  onDeleteWorkout,
+  onEditWorkout
+}: Props) {
   return (
     <div className="stack">
       <WorkoutForm exercises={exercises} workouts={workouts} onAddWorkout={onAddWorkout} />
@@ -21,6 +24,7 @@ export function HomePage({
         exercises={exercises}
         workouts={workouts}
         onDeleteWorkout={onDeleteWorkout}
+        onEditWorkout={onEditWorkout}
       />
     </div>
   );

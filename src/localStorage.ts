@@ -2,6 +2,14 @@ import type { Exercise, ExerciseSet, WorkoutEntry } from "./types";
 
 const EXERCISES_KEY = "wt_exercises_v1";
 
+// Generate a deterministic ID from exercise name
+export function slugifyExerciseName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 function getWorkoutsKey(userId: string): string {
   return `wt_workouts_${userId}_v1`;
 }
@@ -91,7 +99,7 @@ export function saveWorkouts(userId: string, workouts: WorkoutEntry[]) {
   window.localStorage.setItem(key, JSON.stringify(workouts));
 }
 
-function getDefaultExercises(): Exercise[] {
+export function getDefaultExercises(): Exercise[] {
   // Default list based on your JSON, mapped into the internal Exercise shape.
   const base = [
     { name: "Barbell Bench Press", muscle: "Chest" },
@@ -146,17 +154,11 @@ function getDefaultExercises(): Exercise[] {
     { name: "Single-Leg Calf Raise", muscle: "Calves" }
   ];
 
-  const slug = (name: string) =>
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-  return base.map((e, idx) => ({
-    id: `${slug(e.name)}-${idx}`,
+  return base.map((e) => ({
+    id: slugifyExerciseName(e.name),
     name: e.name,
     category: e.muscle,
-    unit: "weight_reps"
+    unit: "weight_reps" as const
   }));
 }
 

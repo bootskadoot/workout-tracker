@@ -2,15 +2,18 @@ import { useState } from "react";
 import type { Exercise, WorkoutEntry } from "../types";
 import { isNewPR } from "../utils/personalRecords";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { EditWorkoutModal } from "./EditWorkoutModal";
 
 interface Props {
   exercises: Exercise[];
   workouts: WorkoutEntry[];
   onDeleteWorkout?: (id: string) => void;
+  onEditWorkout?: (updated: WorkoutEntry) => void;
 }
 
-export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) {
+export function WorkoutHistory({ exercises, workouts, onDeleteWorkout, onEditWorkout }: Props) {
   const [workoutToDelete, setWorkoutToDelete] = useState<string | null>(null);
+  const [workoutToEdit, setWorkoutToEdit] = useState<WorkoutEntry | null>(null);
   const sorted = [...workouts].sort((a, b) => (a.date < b.date ? 1 : -1));
 
   // Helper to check if an exercise in a workout is a PR
@@ -57,15 +60,26 @@ export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) 
                   <span className="history-exercise-count">
                     {w.exercises.length} {w.exercises.length === 1 ? "exercise" : "exercises"}
                   </span>
-                  {onDeleteWorkout && (
-                    <button
-                      type="button"
-                      className="ghost-btn history-delete-btn"
-                      onClick={() => setWorkoutToDelete(w.id)}
-                    >
-                      Delete
-                    </button>
-                  )}
+                  <div className="history-actions">
+                    {onEditWorkout && (
+                      <button
+                        type="button"
+                        className="ghost-btn history-edit-btn"
+                        onClick={() => setWorkoutToEdit(w)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {onDeleteWorkout && (
+                      <button
+                        type="button"
+                        className="ghost-btn history-delete-btn"
+                        onClick={() => setWorkoutToDelete(w.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <ul className="workout-exercises">
                   {w.exercises.map((exSet, idx) => {
@@ -105,6 +119,17 @@ export function WorkoutHistory({ exercises, workouts, onDeleteWorkout }: Props) 
             setWorkoutToDelete(null);
           }}
           onCancel={() => setWorkoutToDelete(null)}
+        />
+      )}
+      {workoutToEdit && onEditWorkout && (
+        <EditWorkoutModal
+          workout={workoutToEdit}
+          exercises={exercises}
+          onSave={(updated) => {
+            onEditWorkout(updated);
+            setWorkoutToEdit(null);
+          }}
+          onClose={() => setWorkoutToEdit(null)}
         />
       )}
     </section>

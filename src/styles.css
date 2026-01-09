@@ -1125,5 +1125,131 @@ textarea {
   }
 }
 
+/* History Actions */
+.history-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.history-edit-btn {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.history-edit-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+/* Edit Workout Modal */
+.edit-workout-modal {
+  max-width: 600px;
+}
+
+.edit-exercises-section {
+  margin-top: 1rem;
+}
+
+.edit-exercises-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.edit-exercise-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.edit-exercise-item {
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.6rem;
+}
+
+.edit-exercise-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.edit-exercise-select {
+  flex: 1;
+}
+
+.edit-exercise-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.field-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  flex: 1;
+  min-width: 80px;
+}
+
+.field-inline span {
+  color: #9ca3af;
+}
+
+.field-inline input {
+  width: 100%;
+}
+
+/* Add Exercise Inline Form */
+.add-exercise-inline {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  border-radius: 0.6rem;
+}
+
+.add-exercise-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.add-exercise-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .edit-exercise-fields,
+  .add-exercise-fields {
+    flex-direction: column;
+  }
+
+  .field-inline {
+    min-width: 100%;
+  }
+
+  .history-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .history-edit-btn,
+  .history-delete-btn {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
 
 
