@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { loadExercises, loadWorkouts, saveExercises, saveWorkouts } from "./localStorage";
 import {
   fetchWorkoutsFromSupabase,
@@ -28,10 +28,23 @@ export function useWorkoutHistory(userId: string) {
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
-  // Load workouts on mount - try Supabase first, fallback to localStorage
+  // Track the previous userId to detect profile switches
+  const prevUserIdRef = useRef<string>(userId);
+  const isInitialLoadRef = useRef<boolean>(true);
+
+  // Load workouts on mount or when userId changes
   useEffect(() => {
     async function loadData() {
+      // Clear workouts immediately when switching users to prevent stale data
+      if (prevUserIdRef.current !== userId) {
+        setWorkouts([]);
+        setLastSync(null);
+        prevUserIdRef.current = userId;
+      }
+
       setSyncing(true);
+      isInitialLoadRef.current = true;
+
       try {
         // Try to fetch from Supabase first
         const supabaseWorkouts = await fetchWorkoutsFromSupabase(userId);
@@ -52,6 +65,7 @@ export function useWorkoutHistory(userId: string) {
         setWorkouts(loadWorkouts(userId));
       } finally {
         setSyncing(false);
+        isInitialLoadRef.current = false;
       }
     }
 
@@ -60,6 +74,11 @@ export function useWorkoutHistory(userId: string) {
 
   // Save to both localStorage and Supabase whenever workouts change
   useEffect(() => {
+    // Skip saving during initial load or if workouts is empty without prior sync
+    if (isInitialLoadRef.current) {
+      return;
+    }
+
     if (workouts.length === 0 && !lastSync) {
       // Skip saving if we just initialized with empty array
       return;
@@ -73,7 +92,7 @@ export function useWorkoutHistory(userId: string) {
       // Note: We save individual workouts, not the whole array
       // This is handled when workouts are added/removed
     }
-  }, [workouts, userId]);
+  }, [workouts, userId, lastSync]);
 
   // Helper to manually sync all workouts to Supabase
   const syncToSupabase = async () => {
