@@ -215,11 +215,30 @@ export function WorkoutForm({ exercises, workouts, onAddWorkout }: Props) {
           <label className="field">
             <span>Exercise</span>
             <select value={exerciseId} onChange={(e) => setExerciseId(e.target.value)}>
-              {exercises.map((ex) => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.name}
-                </option>
-              ))}
+              {(() => {
+                // Group exercises by category and sort alphabetically within each
+                const grouped = exercises.reduce((acc, ex) => {
+                  const cat = ex.category || "Other";
+                  if (!acc[cat]) acc[cat] = [];
+                  acc[cat].push(ex);
+                  return acc;
+                }, {} as Record<string, typeof exercises>);
+
+                // Sort categories alphabetically, then exercises within each
+                const sortedCategories = Object.keys(grouped).sort();
+
+                return sortedCategories.map((category) => (
+                  <optgroup key={category} label={category}>
+                    {grouped[category]
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((ex) => (
+                        <option key={ex.id} value={ex.id}>
+                          {ex.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                ));
+              })()}
             </select>
           </label>
           <label className="field">
