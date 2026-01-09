@@ -15,8 +15,9 @@ import type { WorkoutEntry } from "./types";
 
 export function App() {
   const { currentUser, setCurrentUser } = useUser();
-  const { exercises, setExercises } = useExerciseLibrary();
-  const { workouts, setWorkouts, syncing, lastSync, syncToSupabase, setLastSync } = useWorkoutHistory(currentUser?.id || "user1");
+  const userId = currentUser?.id || "user1";
+  const { exercises, setExercises } = useExerciseLibrary(userId);
+  const { workouts, setWorkouts, syncing, lastSync, syncToSupabase, setLastSync } = useWorkoutHistory(userId);
 
   const handleDeleteWorkout = async (id: string) => {
     // Update local state immediately
@@ -103,6 +104,7 @@ export function App() {
           path="/settings"
           element={
             <SettingsPage
+              userId={userId}
               exercises={exercises}
               setExercises={setExercises}
               onManualSync={syncToSupabase}

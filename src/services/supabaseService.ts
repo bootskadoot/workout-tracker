@@ -1,9 +1,116 @@
 import { supabase, isSupabaseConfigured } from '../supabaseClient';
-import type { WorkoutEntry } from '../types';
+import type { Exercise, WorkoutEntry } from '../types';
 import type { PersonalRecordData } from '../utils/personalRecords';
 
 // Re-export for convenience
 export { isSupabaseConfigured };
+
+// ==================== EXERCISES ====================
+
+// Fetch all exercises for a user from Supabase
+export async function fetchExercisesFromSupabase(userId: string): Promise<Exercise[]> {
+  if (!supabase || !isSupabaseConfigured()) {
+    return [];
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('user_id', userId)
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+
+    return (data || []).map((ex) => ({
+      id: ex.id,
+      name: ex.name,
+      category: ex.category,
+      unit: ex.unit as Exercise['unit'],
+    }));
+  } catch (error) {
+    console.error('Error fetching exercises from Supabase:', error);
+    return [];
+  }
+}
+
+// Save an exercise to Supabase
+export async function saveExerciseToSupabase(
+  userId: string,
+  exercise: Exercise
+): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured()) {
+    return false;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('exercises')
+      .upsert({
+        id: exercise.id,
+        user_id: userId,
+        name: exercise.name,
+        category: exercise.category,
+        unit: exercise.unit,
+      });
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error saving exercise to Supabase:', error);
+    return false;
+  }
+}
+
+// Delete an exercise from Supabase
+export async function deleteExerciseFromSupabase(
+  userId: string,
+  exerciseId: string
+): Promise<boolean> {
+  if (!supabase || !isSupabaseConfigured()) {
+    return false;
+  }
+
+  try {
+    const { error } = await supabase
+      .from('exercises')
+      .delete()
+      .eq('id', exerciseId)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting exercise from Supabase:', error);
+    return false;
+  }
+}
+
+// Sync all exercises to Supabase (for initial migration)
+export async function syncAllExercisesToSupabase(
+  userId: string,
+  exercises: Exercise[]
+): Promise<{ success: number; failed: number }> {
+  if (!supabase || !isSupabaseConfigured()) {
+    return { success: 0, failed: exercises.length };
+  }
+
+  let success = 0;
+  let failed = 0;
+
+  for (const exercise of exercises) {
+    const result = await saveExerciseToSupabase(userId, exercise);
+    if (result) {
+      success++;
+    } else {
+      failed++;
+    }
+  }
+
+  return { success, failed };
+}
+
+// ==================== WORKOUTS ====================
 
 export interface SyncStatus {
   syncing: boolean;

@@ -1,26 +1,94 @@
 import { useEffect, useState, useRef } from "react";
-import { loadExercises, loadWorkouts, saveExercises, saveWorkouts } from "./localStorage";
+import { loadExercises, loadWorkouts, saveExercises, saveWorkouts, getDefaultExercises } from "./localStorage";
 import {
+  fetchExercisesFromSupabase,
   fetchWorkoutsFromSupabase,
   saveWorkoutToSupabase,
+  syncAllExercisesToSupabase,
   isSupabaseConfigured
 } from "./services/supabaseService";
 import type { Exercise, WorkoutEntry } from "./types";
 
-export function useExerciseLibrary() {
+export function useExerciseLibrary(userId: string) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [syncing, setSyncing] = useState(false);
 
-  useEffect(() => {
-    setExercises(loadExercises());
-  }, []);
+  // Track the previous userId to detect profile switches
+  const prevUserIdRef = useRef<string>(userId);
+  const isInitialLoadRef = useRef<boolean>(true);
 
+  // Load exercises on mount or when userId changes
   useEffect(() => {
-    if (exercises.length) {
+    async function loadData() {
+      // Clear exercises immediately when switching users
+      if (prevUserIdRef.current !== userId) {
+        setExercises([]);
+        prevUserIdRef.current = userId;
+      }
+
+      setSyncing(true);
+      isInitialLoadRef.current = true;
+
+      try {
+        // Try to fetch from Supabase first
+        const supabaseExercises = await fetchExercisesFromSupabase(userId);
+
+        if (supabaseExercises.length > 0) {
+          // Supabase has data, use it
+          setExercises(supabaseExercises);
+          // Also save to localStorage as cache
+          saveExercises(supabaseExercises);
+        } else {
+          // No Supabase data, load from localStorage
+          const localExercises = loadExercises();
+          if (localExercises.length > 0) {
+            setExercises(localExercises);
+            // Sync local exercises to Supabase
+            if (isSupabaseConfigured()) {
+              await syncAllExercisesToSupabase(userId, localExercises);
+            }
+          } else {
+            // No local data either, load defaults
+            const defaults = getDefaultExercises();
+            setExercises(defaults);
+            saveExercises(defaults);
+            if (isSupabaseConfigured()) {
+              await syncAllExercisesToSupabase(userId, defaults);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading exercises from Supabase, using localStorage:', error);
+        const localExercises = loadExercises();
+        if (localExercises.length > 0) {
+          setExercises(localExercises);
+        } else {
+          const defaults = getDefaultExercises();
+          setExercises(defaults);
+          saveExercises(defaults);
+        }
+      } finally {
+        setSyncing(false);
+        isInitialLoadRef.current = false;
+      }
+    }
+
+    loadData();
+  }, [userId]);
+
+  // Save to localStorage whenever exercises change (Supabase sync is done individually)
+  useEffect(() => {
+    // Skip saving during initial load
+    if (isInitialLoadRef.current) {
+      return;
+    }
+
+    if (exercises.length > 0) {
       saveExercises(exercises);
     }
   }, [exercises]);
 
-  return { exercises, setExercises };
+  return { exercises, setExercises, syncing };
 }
 
 export function useWorkoutHistory(userId: string) {

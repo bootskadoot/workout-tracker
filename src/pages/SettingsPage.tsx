@@ -2,8 +2,14 @@ import { useState } from "react";
 import type { Exercise } from "../types";
 import { isSupabaseConfigured } from "../supabaseClient";
 import { slugifyExerciseName, getDefaultExercises } from "../localStorage";
+import {
+  saveExerciseToSupabase,
+  deleteExerciseFromSupabase,
+  syncAllExercisesToSupabase
+} from "../services/supabaseService";
 
 interface Props {
+  userId: string;
   exercises: Exercise[];
   setExercises: (next: Exercise[]) => void;
   onManualSync?: () => Promise<void>;
@@ -32,7 +38,7 @@ const UNIT_OPTIONS: { value: Exercise["unit"]; label: string }[] = [
   { value: "distance", label: "Distance" }
 ];
 
-export function SettingsPage({ exercises, setExercises, onManualSync, syncing, lastSync }: Props) {
+export function SettingsPage({ userId, exercises, setExercises, onManualSync, syncing, lastSync }: Props) {
   // New exercise form state
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("Custom");
@@ -49,7 +55,7 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
   const [jsonText, setJsonText] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
 
-  function handleAddExercise(e: React.FormEvent) {
+  async function handleAddExercise(e: React.FormEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
 
@@ -72,9 +78,14 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
     setNewName("");
     setNewCategory("Custom");
     setNewUnit("weight_reps");
+
+    // Sync to Supabase
+    if (isSupabaseConfigured()) {
+      await saveExerciseToSupabase(userId, newExercise);
+    }
   }
 
-  function handleRestoreDefaults() {
+  async function handleRestoreDefaults() {
     if (confirm("This will add all default exercises. Existing exercises with the same name will be updated. Continue?")) {
       const defaults = getDefaultExercises();
       const merged = [...exercises];
@@ -91,6 +102,11 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
       }
 
       setExercises(merged);
+
+      // Sync all to Supabase
+      if (isSupabaseConfigured()) {
+        await syncAllExercisesToSupabase(userId, merged);
+      }
     }
   }
 
@@ -101,29 +117,44 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
     setEditUnit(exercise.unit);
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (!editingId || !editName.trim()) return;
 
+    const updatedExercise: Exercise = {
+      id: editingId,
+      name: editName.trim(),
+      category: editCategory,
+      unit: editUnit
+    };
+
     const updated = exercises.map((ex) =>
-      ex.id === editingId
-        ? { ...ex, name: editName.trim(), category: editCategory, unit: editUnit }
-        : ex
+      ex.id === editingId ? updatedExercise : ex
     );
     setExercises(updated);
     setEditingId(null);
+
+    // Sync to Supabase
+    if (isSupabaseConfigured()) {
+      await saveExerciseToSupabase(userId, updatedExercise);
+    }
   }
 
   function handleCancelEdit() {
     setEditingId(null);
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     if (confirm("Delete this exercise?")) {
       setExercises(exercises.filter((ex) => ex.id !== id));
+
+      // Sync to Supabase
+      if (isSupabaseConfigured()) {
+        await deleteExerciseFromSupabase(userId, id);
+      }
     }
   }
 
-  function handleImportJson() {
+  async function handleImportJson() {
     try {
       const parsed = JSON.parse(jsonText) as any[];
       if (!Array.isArray(parsed)) {
@@ -151,6 +182,11 @@ export function SettingsPage({ exercises, setExercises, onManualSync, syncing, l
       setJsonError(null);
       setJsonText("");
       setShowAdvanced(false);
+
+      // Sync all to Supabase
+      if (isSupabaseConfigured()) {
+        await syncAllExercisesToSupabase(userId, mapped);
+      }
     } catch (e) {
       setJsonError(e instanceof Error ? e.message : "Invalid JSON");
     }
